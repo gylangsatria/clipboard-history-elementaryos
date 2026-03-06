@@ -11,6 +11,7 @@ public class ClipboardManager : Object {
     public signal void history_changed();
 
     public ClipboardManager () {
+
         clipboard = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
 
         Timeout.add(600, () => {
@@ -45,11 +46,34 @@ public class ClipboardManager : Object {
         var results = new ArrayList<string>();
 
         foreach (var item in history) {
+
             if (item.down().contains(query.down())) {
                 results.add(item);
             }
         }
 
         return results;
+    }
+
+    // hapus item tertentu
+    public void remove_item(string text) {
+
+        for (int i = 0; i < history.size; i++) {
+
+            if (history[i] == text) {
+                history.remove_at(i);
+                break;
+            }
+        }
+
+        history_changed();
+    }
+
+    // hapus semua history
+    public void clear_all() {
+
+        history.clear();
+
+        history_changed();
     }
 }

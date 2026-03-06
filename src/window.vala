@@ -21,6 +21,16 @@ public class MainWindow : Gtk.ApplicationWindow {
         header.show_close_button = true;
         header.title = "Clipboard History";
 
+        // tombol clear all
+        var clear_button = new Gtk.Button.with_label("Clear");
+        clear_button.tooltip_text = "Clear all history";
+
+        clear_button.clicked.connect(() => {
+            manager.clear_all();
+        });
+
+        header.pack_end(clear_button);
+
         set_titlebar(header);
 
         var box = new Gtk.Box(Gtk.Orientation.VERTICAL, 6);
@@ -33,6 +43,7 @@ public class MainWindow : Gtk.ApplicationWindow {
         list.selection_mode = SelectionMode.NONE;
 
         var scroll = new Gtk.ScrolledWindow(null, null);
+        scroll.expand = true;
         scroll.add(list);
 
         box.pack_start(search, false, false, 0);
@@ -64,19 +75,33 @@ public class MainWindow : Gtk.ApplicationWindow {
             var row = new Gtk.ListBoxRow();
 
             var row_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 6);
+            row_box.margin = 6;
 
             var label = new Gtk.Label(text);
             label.wrap = true;
             label.xalign = 0;
+            label.hexpand = true;
+            label.max_width_chars = 40;
 
-            var button = new Gtk.Button.with_label("Copy");
+            // tombol copy
+            var copy_button = new Gtk.Button.with_label("Copy");
 
-            button.clicked.connect(() => {
+            copy_button.clicked.connect(() => {
                 manager.copy_again(text);
             });
 
+            // tombol delete
+            var delete_button = new Gtk.Button.with_label("Delete");
+
+            delete_button.get_style_context().add_class("destructive-action");
+
+            delete_button.clicked.connect(() => {
+                manager.remove_item(text);
+            });
+
             row_box.pack_start(label, true, true, 0);
-            row_box.pack_end(button, false, false, 0);
+            row_box.pack_end(delete_button, false, false, 0);
+            row_box.pack_end(copy_button, false, false, 0);
 
             row.add(row_box);
             list.add(row);
