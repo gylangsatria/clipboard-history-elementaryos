@@ -14,8 +14,6 @@ public class ClipboardApp : Gtk.Application {
 
         var win = new MainWindow(this, manager);
 
-        new ClipboardIndicator(win, manager);
-
         win.show_all();
     }
 

@@ -15,6 +15,7 @@ public class MainWindow : Gtk.ApplicationWindow {
                default_width: 420,
                default_height: 500);
 
+        set_icon_name("clipboard-history");
         this.manager = manager;
 
         var header = new Gtk.HeaderBar();

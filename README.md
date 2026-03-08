@@ -18,7 +18,7 @@ Designed to integrate well with elementary OS style and workflows.
 
 ## Screenshot
 
->>> in progress
+![Screenshot App](assets/clipboard-history.png)
 
 ## Requirements
 
