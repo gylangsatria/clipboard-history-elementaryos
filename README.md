@@ -65,6 +65,17 @@ clipboard-history-elementaryos
  │   ├── main.vala
  │   ├── window.vala
  │   └── clipboard-manager.vala
+ │
+ ├── data
+ │   └── icons
+ │       └── hicolor
+ │           └── 128x128
+ │               └── apps
+ │                   └── clipboard-history.png
+ │
+ ├── assets
+ │   └── clipboard-history.png
+ │
  └── README.md
 ```
 
