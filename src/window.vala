@@ -3,12 +3,12 @@ using Granite;
 
 public class MainWindow : Gtk.ApplicationWindow {
 
-    ClipboardManager manager;
+    ClipboardHistory manager;
 
     Gtk.SearchEntry search;
     Gtk.ListBox list;
 
-    public MainWindow(Gtk.Application app, ClipboardManager manager) {
+    public MainWindow(Gtk.Application app, ClipboardHistory manager) {
 
         Object(application: app,
                title: "Clipboard History",

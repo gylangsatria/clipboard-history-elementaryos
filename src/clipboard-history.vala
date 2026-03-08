@@ -1,7 +1,7 @@
 using Gtk;
 using Gee;
 
-public class ClipboardManager : Object {
+public class ClipboardHistory : Object {
 
     public ArrayList<string> history = new ArrayList<string>();
     private Clipboard clipboard;
@@ -10,7 +10,7 @@ public class ClipboardManager : Object {
 
     public signal void history_changed();
 
-    public ClipboardManager () {
+    public ClipboardHistory () {
 
         clipboard = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
 

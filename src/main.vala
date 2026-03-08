@@ -2,7 +2,7 @@ using Gtk;
 
 public class ClipboardApp : Gtk.Application {
 
-    ClipboardManager manager;
+    ClipboardHistory manager;
 
     public ClipboardApp() {
         Object(application_id: "com.example.clipboardhistory");
@@ -10,7 +10,7 @@ public class ClipboardApp : Gtk.Application {
 
     protected override void activate() {
 
-        manager = new ClipboardManager();
+        manager = new ClipboardHistory();
 
         var win = new MainWindow(this, manager);
 
