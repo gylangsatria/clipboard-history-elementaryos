@@ -54,7 +54,25 @@ After compiling, run the application:
 ```bash
 ./main
 or 
-./clipboard-manager
+./clipboard-history
+```
+### Install via Ninja
+
+1. Make sure you have meson and ninja installed. 
+```
+sudo apt install meson ninja-build
+```
+
+2. Configure the build directory:
+
+```
+meson build
+```
+
+3. Build and install:
+```
+cd build/
+sudo ninja install
 ```
 
 ## Project Structure
