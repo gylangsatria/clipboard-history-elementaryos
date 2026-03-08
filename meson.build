@@ -9,7 +9,7 @@ executable(
     [
         'src/main.vala',
         'src/window.vala',
-        'src/clipboard-manager.vala'
+        'src/clipboard-history.vala'
     ],
     dependencies: [gtk, granite, gee],
     install: true
