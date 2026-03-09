@@ -75,6 +75,11 @@ cd build/
 sudo ninja install
 ```
 
+4. For uninstall use this command : 
+```
+sudo meson install -C build
+```
+
 ## Project Structure
 
 ```
