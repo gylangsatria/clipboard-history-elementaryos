@@ -1,0 +1,8 @@
+Package: clipboard-history
+Version: 1.0-1
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: gylangsatria
+Description: clipboard history for elementary os
+ A clipboard manager with history feature for elementary OS.
