@@ -14,40 +14,55 @@ public class ClipboardHistory : Object {
 
         clipboard = Clipboard.get(Gdk.SELECTION_CLIPBOARD);
 
-        Timeout.add(600, () => {
-            check_clipboard();
+        clipboard.owner_change.connect(() => {
+            check_clipboard_async();
+        });
+
+        Timeout.add(1000, () => {
+            check_clipboard_async();
             return true;
         });
     }
 
-    void check_clipboard() {
+    void check_clipboard_async() {
 
-        string text = clipboard.wait_for_text();
+        clipboard.request_text((clipboard, text) => {
 
-        if (text != null && text != last_text && text.strip() != "") {
+            if (text == null)
+                return;
 
+            var cleaned_text = text.strip();
+
+            if (cleaned_text == "" || cleaned_text == last_text)
+                return;
+
+            last_text = cleaned_text;
+
+            // hindari duplikat
+            history.remove(text);
             history.insert(0, text);
-            last_text = text;
 
+            // limit history
             if (history.size > max_items) {
                 history.remove_at(history.size - 1);
             }
 
             history_changed();
-        }
+        });
     }
 
     public void copy_again(string text) {
         clipboard.set_text(text, -1);
+        clipboard.store(); 
     }
 
     public ArrayList<string> search(string query) {
 
         var results = new ArrayList<string>();
+        var q = query.down();
 
         foreach (var item in history) {
-
-            if (item.down().contains(query.down())) {
+            if (item.down().contains(q)) {
                 results.add(item);
             }
         }
@@ -58,14 +73,7 @@ public class ClipboardHistory : Object {
     // hapus item tertentu
     public void remove_item(string text) {
 
-        for (int i = 0; i < history.size; i++) {
-
-            if (history[i] == text) {
-                history.remove_at(i);
-                break;
-            }
-        }
-
+        history.remove(text);
         history_changed();
     }
 
@@ -73,7 +81,6 @@ public class ClipboardHistory : Object {
     public void clear_all() {
 
         history.clear();
-
         history_changed();
     }
 }
