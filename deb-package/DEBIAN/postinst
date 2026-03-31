@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-echo "clipboard-history has been installed successfully!"
-exit 0
