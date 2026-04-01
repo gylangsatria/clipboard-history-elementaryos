@@ -16,6 +16,10 @@ public class MainWindow : Gtk.ApplicationWindow {
     Gtk.Box button_box;
     Gtk.Label info_label;
     
+    // Dark mode
+    Gtk.Switch dark_mode_switch;
+    Gtk.CssProvider css_provider;
+    
     public MainWindow(Gtk.Application app, ClipboardHistory manager) {
         
         Object(application: app,
@@ -26,9 +30,41 @@ public class MainWindow : Gtk.ApplicationWindow {
         set_icon_name("clipboard-history");
         this.manager = manager;
         
+        // Inisialisasi CSS provider untuk dark mode
+        css_provider = new Gtk.CssProvider();
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        );
+        
         var header = new Gtk.HeaderBar();
         header.show_close_button = true;
         header.title = "Clipboard History";
+        
+        // Box untuk tombol di kanan header
+        var header_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 6);
+        
+        // Tombol dark mode
+        var dark_mode_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 6);
+        var dark_mode_label = new Gtk.Label("Dark Mode");
+        dark_mode_label.get_style_context().add_class("dim-label");
+        
+        dark_mode_switch = new Gtk.Switch();
+        dark_mode_switch.valign = Align.CENTER;
+        
+        // Cek preferensi sistem untuk dark mode
+        var settings = Gtk.Settings.get_default();
+        bool is_dark = settings.gtk_application_prefer_dark_theme;
+        dark_mode_switch.active = is_dark;
+        apply_dark_mode(is_dark);
+        
+        dark_mode_switch.notify["active"].connect(() => {
+            apply_dark_mode(dark_mode_switch.active);
+        });
+        
+        dark_mode_box.pack_start(dark_mode_label, false, false, 0);
+        dark_mode_box.pack_start(dark_mode_switch, false, false, 0);
         
         // tombol clear all
         var clear_button = new Gtk.Button.with_label("Clear");
@@ -40,7 +76,10 @@ public class MainWindow : Gtk.ApplicationWindow {
             refresh_list();
         });
         
-        header.pack_end(clear_button);
+        header_box.pack_start(dark_mode_box, false, false, 0);
+        header_box.pack_end(clear_button, false, false, 0);
+        
+        header.set_custom_title(header_box);
         
         set_titlebar(header);
         
@@ -106,6 +145,82 @@ public class MainWindow : Gtk.ApplicationWindow {
         });
         
         show_all();
+    }
+    
+    void apply_dark_mode(bool dark) {
+        var settings = Gtk.Settings.get_default();
+        settings.gtk_application_prefer_dark_theme = dark;
+        
+        // CSS tambahan untuk dark mode
+        if (dark) {
+            string css = """
+                /* Dark mode styles */
+                .background {
+                    background-color: #2d2d2d;
+                }
+                
+                GtkListBoxRow {
+                    background-color: #3c3c3c;
+                    border-bottom: 1px solid #4a4a4a;
+                }
+                
+                GtkListBoxRow:hover {
+                    background-color: #4a4a4a;
+                }
+                
+                GtkLabel {
+                    color: #f0f0f0;
+                }
+                
+                .dim-label {
+                    color: #a0a0a0;
+                }
+                
+                GtkSearchEntry {
+                    background-color: #3c3c3c;
+                    color: #f0f0f0;
+                    border: 1px solid #4a4a4a;
+                }
+                
+                GtkButton {
+                    background-color: #4a4a4a;
+                    color: #f0f0f0;
+                    border: 1px solid #5a5a5a;
+                }
+                
+                GtkButton:hover {
+                    background-color: #5a5a5a;
+                }
+                
+                .destructive-action {
+                    background-color: #c6262e;
+                    color: white;
+                }
+                
+                .destructive-action:hover {
+                    background-color: #e33a42;
+                }
+                
+                GtkScrolledWindow {
+                    background-color: #2d2d2d;
+                }
+            """;
+            css_provider.load_from_data(css, -1);
+        } else {
+            // Reset ke tema default
+            string css = """
+                /* Light mode - default theme */
+                GtkListBoxRow {
+                    background-color: transparent;
+                    border-bottom: 1px solid #e0e0e0;
+                }
+                
+                .dim-label {
+                    color: #6c6c6c;
+                }
+            """;
+            css_provider.load_from_data(css, -1);
+        }
     }
     
     // Fungsi untuk memotong teks jika terlalu panjang
