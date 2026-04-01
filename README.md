@@ -18,7 +18,9 @@ Designed to integrate well with elementary OS style and workflows.
 
 ## Screenshot
 
-![Screenshot App](assets/clipboard-history.png)
+![Screenshot App](assets/screenshot-dark.png)
+
+![Screenshot App](assets/screenshot-light.png)
 
 ## Requirements
 
@@ -78,6 +80,29 @@ sudo ninja install
 4. For uninstall use this command : 
 ```
 sudo meson install -C build
+```
+
+### Build .deb File
+
+1. Compile project:
+
+```
+meson compile -C build
+```
+
+2. Install to staging directory:
+```
+DESTDIR=$PWD/deb-package/ meson install -C build
+```
+
+3. Build package .deb:
+```
+dpkg-deb --build deb-package/
+```
+
+4. Rename .deb: 
+```
+mv deb-package.deb clipboard-history_1.1_amd64.deb
 ```
 
 ## Project Structure
