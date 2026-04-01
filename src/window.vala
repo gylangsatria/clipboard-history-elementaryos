@@ -20,6 +20,9 @@ public class MainWindow : Gtk.ApplicationWindow {
     Gtk.Switch dark_mode_switch;
     Gtk.CssProvider css_provider;
     
+    // Version info
+    Gtk.Label version_label;
+    
     public MainWindow(Gtk.Application app, ClipboardHistory manager) {
         
         Object(application: app,
@@ -127,10 +130,34 @@ public class MainWindow : Gtk.ApplicationWindow {
         button_box.pack_start(show_less_button, false, false, 0);
         button_box.pack_start(show_more_button, false, false, 0);
         
+        // Version label di bagian bawah
+        var version_box = new Gtk.Box(Gtk.Orientation.HORIZONTAL, 6);
+        version_box.halign = Align.CENTER;
+        version_box.margin_top = 8;
+        
+        version_label = new Gtk.Label("");
+        version_label.get_style_context().add_class("dim-label");
+        version_label.set_markup("<small>Clipboard History v1.2.0</small>");
+        
+        // Tambahkan link ke repository atau info
+        var about_button = new Gtk.Button.with_label("ℹ️");
+        about_button.tooltip_text = "About";
+        about_button.relief = ReliefStyle.NONE;
+        about_button.width_request = 24;
+        about_button.height_request = 24;
+        
+        about_button.clicked.connect(() => {
+            show_about_dialog();
+        });
+        
+        version_box.pack_start(version_label, false, false, 0);
+        version_box.pack_start(about_button, false, false, 0);
+        
         box.pack_start(search, false, false, 0);
         box.pack_start(scroll, true, true, 0);
         box.pack_start(button_box, false, false, 0);
         box.pack_start(info_label, false, false, 0);
+        box.pack_start(version_box, false, false, 0);
         
         add(box);
         
@@ -145,6 +172,23 @@ public class MainWindow : Gtk.ApplicationWindow {
         });
         
         show_all();
+    }
+    
+    void show_about_dialog() {
+        var about = new Gtk.AboutDialog();
+        about.set_transient_for(this);
+        about.set_program_name("Clipboard History");
+        about.set_version("1.2.0");
+        about.set_comments("Clipboard history for elementary os");
+        about.set_copyright("© 2026 Gylang Satria");
+        about.set_license_type(Gtk.License.GPL_3_0);
+        about.set_website("https://github.com/gylangsatria/clipboard-history-elementaryos");
+        about.set_website_label("GitHub Repository");
+        about.set_authors({"Gylang Satria <sayugiteam@gmail.com>"});
+        about.set_logo_icon_name("clipboard-history");
+        
+        about.run();
+        about.destroy();
     }
     
     void apply_dark_mode(bool dark) {
@@ -204,6 +248,16 @@ public class MainWindow : Gtk.ApplicationWindow {
                 GtkScrolledWindow {
                     background-color: #2d2d2d;
                 }
+                
+                /* Style untuk about button */
+                GtkButton.flat {
+                    background-color: transparent;
+                    border: none;
+                }
+                
+                GtkButton.flat:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
             """;
             css_provider.load_from_data(css, -1);
         } else {
@@ -217,6 +271,16 @@ public class MainWindow : Gtk.ApplicationWindow {
                 
                 .dim-label {
                     color: #6c6c6c;
+                }
+                
+                /* Style untuk about button */
+                GtkButton.flat {
+                    background-color: transparent;
+                    border: none;
+                }
+                
+                GtkButton.flat:hover {
+                    background-color: rgba(0, 0, 0, 0.05);
                 }
             """;
             css_provider.load_from_data(css, -1);
