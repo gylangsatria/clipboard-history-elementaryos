@@ -26,12 +26,35 @@ public class MainWindow : Gtk.ApplicationWindow {
     public MainWindow(Gtk.Application app, ClipboardHistory manager) {
         
         Object(application: app,
-               title: "Clipboard History",
-               default_width: 420,
-               default_height: 500);
+            title: "Clipboard History",
+            default_width: 420,
+            default_height: 500);
         
-        set_icon_name("clipboard-history");
         this.manager = manager;
+        
+        // Cara modern untuk GTK 3.22+ - gunakan set_role dan set_wmclass (masih diperlukan)
+        #if !GTK_3_22
+            this.set_wmclass("clipboard-history", "ClipboardHistory");
+        #else
+            // Untuk GTK 3.22+, set_wmclass masih berfungsi meskipun deprecated
+            this.set_wmclass("clipboard-history", "ClipboardHistory");
+        #endif
+        
+        // Set role untuk identifikasi
+        this.set_role("clipboard-history-main");
+        
+        // Set icon name yang sama dengan desktop entry
+        try {
+            this.set_icon_name("clipboard-history");
+        } catch (Error e) {
+            warning("Failed to set icon: %s", e.message);
+        }
+        
+        // Pastikan window tidak di-skip oleh window manager
+        this.set_skip_taskbar_hint(false);
+        this.set_skip_pager_hint(false);
+
+        // ====================================
         
         // Inisialisasi CSS provider untuk dark mode
         css_provider = new Gtk.CssProvider();
@@ -171,7 +194,10 @@ public class MainWindow : Gtk.ApplicationWindow {
             refresh_list();
         });
         
-        show_all();
+        this.show_all();
+        
+        // Pastikan window mendapatkan fokus saat dibuka
+        this.present();
     }
     
     void show_about_dialog() {
@@ -179,113 +205,126 @@ public class MainWindow : Gtk.ApplicationWindow {
         about.set_transient_for(this);
         about.set_program_name("Clipboard History");
         about.set_version("1.2.0");
-        about.set_comments("Clipboard history for elementary os");
+        about.set_comments("Clipboard history for elementary OS");
         about.set_copyright("© 2026 Gylang Satria");
         about.set_license_type(Gtk.License.GPL_3_0);
         about.set_website("https://github.com/gylangsatria/clipboard-history-elementaryos");
         about.set_website_label("GitHub Repository");
         about.set_authors({"Gylang Satria <sayugiteam@gmail.com>"});
-        about.set_logo_icon_name("clipboard-history");
+        
+        try {
+            about.set_logo_icon_name("clipboard-history");
+        } catch (Error e) {
+            warning("Failed to set about dialog logo: %s", e.message);
+        }
         
         about.run();
         about.destroy();
     }
     
-    void apply_dark_mode(bool dark) {
-        var settings = Gtk.Settings.get_default();
-        settings.gtk_application_prefer_dark_theme = dark;
-        
-        // CSS tambahan untuk dark mode
-        if (dark) {
-            string css = """
-                /* Dark mode styles */
-                .background {
-                    background-color: #2d2d2d;
-                }
-                
-                GtkListBoxRow {
-                    background-color: #3c3c3c;
-                    border-bottom: 1px solid #4a4a4a;
-                }
-                
-                GtkListBoxRow:hover {
-                    background-color: #4a4a4a;
-                }
-                
-                GtkLabel {
-                    color: #f0f0f0;
-                }
-                
-                .dim-label {
-                    color: #a0a0a0;
-                }
-                
-                GtkSearchEntry {
-                    background-color: #3c3c3c;
-                    color: #f0f0f0;
-                    border: 1px solid #4a4a4a;
-                }
-                
-                GtkButton {
-                    background-color: #4a4a4a;
-                    color: #f0f0f0;
-                    border: 1px solid #5a5a5a;
-                }
-                
-                GtkButton:hover {
-                    background-color: #5a5a5a;
-                }
-                
-                .destructive-action {
-                    background-color: #c6262e;
-                    color: white;
-                }
-                
-                .destructive-action:hover {
-                    background-color: #e33a42;
-                }
-                
-                GtkScrolledWindow {
-                    background-color: #2d2d2d;
-                }
-                
-                /* Style untuk about button */
-                GtkButton.flat {
-                    background-color: transparent;
-                    border: none;
-                }
-                
-                GtkButton.flat:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
-                }
-            """;
+void apply_dark_mode(bool dark) {
+    var settings = Gtk.Settings.get_default();
+    settings.gtk_application_prefer_dark_theme = dark;
+    
+    // CSS tambahan untuk dark mode
+    if (dark) {
+        string css = """
+            /* Dark mode styles */
+            .background {
+                background-color: #2d2d2d;
+            }
+            
+            GtkListBoxRow {
+                background-color: #3c3c3c;
+                border-bottom: 1px solid #4a4a4a;
+            }
+            
+            GtkListBoxRow:hover {
+                background-color: #4a4a4a;
+            }
+            
+            GtkLabel {
+                color: #f0f0f0;
+            }
+            
+            .dim-label {
+                color: #a0a0a0;
+            }
+            
+            GtkSearchEntry {
+                background-color: #3c3c3c;
+                color: #f0f0f0;
+                border: 1px solid #4a4a4a;
+            }
+            
+            GtkButton {
+                background-color: #4a4a4a;
+                color: #f0f0f0;
+                border: 1px solid #5a5a5a;
+            }
+            
+            GtkButton:hover {
+                background-color: #5a5a5a;
+            }
+            
+            .destructive-action {
+                background-color: #c6262e;
+                color: white;
+            }
+            
+            .destructive-action:hover {
+                background-color: #e33a42;
+            }
+            
+            GtkScrolledWindow {
+                background-color: #2d2d2d;
+            }
+            
+            /* Style untuk about button */
+            GtkButton.flat {
+                background-color: transparent;
+                border: none;
+            }
+            
+            GtkButton.flat:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+        """;
+        try {
             css_provider.load_from_data(css, -1);
-        } else {
-            // Reset ke tema default
-            string css = """
-                /* Light mode - default theme */
-                GtkListBoxRow {
-                    background-color: transparent;
-                    border-bottom: 1px solid #e0e0e0;
-                }
-                
-                .dim-label {
-                    color: #6c6c6c;
-                }
-                
-                /* Style untuk about button */
-                GtkButton.flat {
-                    background-color: transparent;
-                    border: none;
-                }
-                
-                GtkButton.flat:hover {
-                    background-color: rgba(0, 0, 0, 0.05);
-                }
-            """;
+        } catch (Error e) {
+            warning("Failed to load dark theme CSS: %s", e.message);
+        }
+    } else {
+        // Reset ke tema default
+        string css = """
+            /* Light mode - default theme */
+            GtkListBoxRow {
+                background-color: transparent;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .dim-label {
+                color: #6c6c6c;
+            }
+            
+            /* Style untuk about button */
+            GtkButton.flat {
+                background-color: transparent;
+                border: none;
+            }
+            
+            GtkButton.flat:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        """;
+        try {
             css_provider.load_from_data(css, -1);
+        } catch (Error e) {
+            warning("Failed to load light theme CSS: %s", e.message);
         }
     }
+}
     
     // Fungsi untuk memotong teks jika terlalu panjang
     string truncate_text(string text, int max_length = 80) {
