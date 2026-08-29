@@ -1,4 +1,4 @@
-project('clipstory', 'vala', version: '1.5.0')
+project('clipstory', 'vala', version: '1.5.2')
 
 gtk = dependency('gtk+-3.0')
 granite = dependency('granite')

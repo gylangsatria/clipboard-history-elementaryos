@@ -26,6 +26,7 @@ public class ClipboardHistory : Object {
     private uint save_debounce_id = 0;
     private uint wayland_delay_id = 0;
     private bool wayland_detected = false;
+    private bool wayland_request_in_flight = false;
 
     public ClipboardHistory () {
 
@@ -93,6 +94,11 @@ public class ClipboardHistory : Object {
             GLib.Source.remove(wayland_delay_id);
             wayland_delay_id = 0;
         }
+
+        // Simpan data pending agar tidak hilang bila quit sebelum debounce 500ms
+        // selesai. save_history() membaca state live (history/pinned), aman
+        // dipanggil di setiap saat.
+        save_history();
     }
 
     void check_clipboard_async() {
@@ -106,23 +112,42 @@ public class ClipboardHistory : Object {
         }
     }
 
-    // Wayland: coba request dengan retry bertahap (0ms, 100ms, 300ms)
+    // Wayland: coba request dengan retry bertahap (0ms, 100ms, 300ms).
+    // Guard wayland_request_in_flight memastikan hanya SATU rantai request
+    // berjalan pada satu waktu — polling tiap 400ms tidak memulai rantai baru
+    // yang tumpang-tindih dengan retry yang masih pending.
     private void check_clipboard_wayland(int attempt) {
-        if (attempt > 2) return; // Max 3 attempts
+        if (attempt > 2) {
+            wayland_request_in_flight = false;
+            return; // Max 3 attempts
+        }
+
+        if (wayland_request_in_flight) {
+            return; // rantai retry lain masih berjalan, hindari overlap
+        }
+        wayland_request_in_flight = true;
 
         clipboard.request_text((cb, text) => {
             if (text == null) {
-                // Retry dengan delay bertahap
+                // Retry dengan delay bertahap; lepas guard di dalam timer abaik
                 if (attempt < 2) {
                     int delay = (attempt == 0) ? 100 : 200;
+                    if (wayland_delay_id > 0) {
+                        GLib.Source.remove(wayland_delay_id);
+                    }
                     wayland_delay_id = GLib.Timeout.add(delay, () => {
                         wayland_delay_id = 0;
+                        wayland_request_in_flight = false;
                         check_clipboard_wayland(attempt + 1);
                         return false;
                     });
+                } else {
+                    // Percobaan terakhir gagal — lepas guard biar poll berikutnya bisa coba lagi
+                    wayland_request_in_flight = false;
                 }
                 return;
             }
+            wayland_request_in_flight = false;
             process_clipboard_text(text);
         });
     }
@@ -152,11 +177,14 @@ public class ClipboardHistory : Object {
         history_changed();
     }
 
-    // Hapus item non-pinned paling tua jika melebihi batas
+    // Hapus item non-pinned paling tua jika melebihi batas.
+    // Fallback: bila SEMUA item di-pin, tetap paksa hapus yang paling tua agar
+    // max_items benar-benar dihormati (bukan membiarkan history membengkak
+    // tak terbatas melebihi setting user).
     private void trim_history() {
         while (history.size > _max_items) {
-            // Cari dari belakang — jangan hapus item yang di-pin
             bool removed = false;
+            // Prioritas 1: cari dari belakang — item non-pinned paling tua
             for (int i = history.size - 1; i >= 0; i--) {
                 if (!pinned.contains(history.@get(i))) {
                     history.remove_at(i);
@@ -164,7 +192,12 @@ public class ClipboardHistory : Object {
                     break;
                 }
             }
-            if (!removed) break; // Semua item di-pin, stop
+            if (removed) continue;
+
+            // Prioritas 2: semua item di-pin — hapus paling tua sekaligus pin-nya
+            string victim = history.@get(history.size - 1);
+            pinned.remove(victim);
+            history.remove_at(history.size - 1);
         }
     }
 
@@ -278,6 +311,12 @@ public class ClipboardHistory : Object {
                         history.add(item);
                     }
                 }
+            }
+
+            // Enforce max_items setelah load — walau user pernah set lebih besar,
+            // gunakan nilai aktif (default 50) saat startup.
+            if (history.size > _max_items) {
+                trim_history();
             }
         } catch (Error e) {
             // File belum ada — bukan error

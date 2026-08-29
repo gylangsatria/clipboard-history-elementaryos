@@ -1,5 +1,13 @@
 # Changelog / Code Review
 
+## Version 1.5.2
+
+### Bug Fixes
+- **Wayland polling overlap**: Guard `wayland_request_in_flight` memastikan hanya satu rantai request berjalan pada satu waktu; timer retry lama dibatalkan sebelum diganti.
+- **Data loss saat quit**: Finalizer (`~ClipboardHistory()`) kini memanggil `save_history()` sehingga perubahan yang masih menunggu debounce 500ms tidak hilang.
+- **max_items tidak di-enforce saat startup**: `load_history()` kini memanggil `trim_history()` bila jumlah item melebihi batas.
+- **Trim macet saat semua item dipin**: Fallback menghapus item paling tua (beserta pin-nya) agar limit benar-benar dihormati.
+
 ## Version 1.5.0
 
 ### AppCenter Review Fixes

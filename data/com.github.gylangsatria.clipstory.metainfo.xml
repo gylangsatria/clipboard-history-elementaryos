@@ -57,6 +57,17 @@
   </screenshots>
 
   <releases>
+    <release version="1.5.2" date="2026-08-29">
+      <description>
+        <p>Wayland polling de-duplication, guaranteed history save on quit, plus stricter history trimming.</p>
+        <ul>
+          <li>Fix overlapping Wayland clipboard requests (single chain with retry cancel)</li>
+          <li>Save pending history when the app exits</li>
+          <li>Enforce max items on startup</li>
+          <li>Trim pinned items when the history limit is reached</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.5.1" date="2026-07-22">
       <description>
         <p>AppCenter review fixes: correct metainfo validation, proper form factor recommends, and release tag for v1.5.1.</p>

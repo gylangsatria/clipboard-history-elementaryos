@@ -207,7 +207,7 @@ public class MainWindow : Gtk.ApplicationWindow {
         
         version_label = new Gtk.Label("");
         version_label.get_style_context().add_class("dim-label");
-        version_label.set_markup("<small>ClipStory v1.5.0</small>");
+        version_label.set_markup("<small>ClipStory v1.5.2</small>");
         
         // Tambahkan link ke repository atau info
         var about_button = new Gtk.Button.with_label("ℹ️");
@@ -279,7 +279,7 @@ public class MainWindow : Gtk.ApplicationWindow {
         var about = new Gtk.AboutDialog();
         about.set_transient_for(this);
         about.set_program_name("ClipStory");
-        about.set_version("1.5.0");
+        about.set_version("1.5.2");
         about.set_comments("A clipboard history manager");
         about.set_copyright("© 2026 Gylang Satria");
         about.set_license_type(Gtk.License.GPL_3_0);
